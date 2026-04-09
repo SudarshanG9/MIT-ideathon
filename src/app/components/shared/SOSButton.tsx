@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { AlertTriangle, Timer } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
   AlertDialog,
@@ -16,11 +16,12 @@ import { toast } from 'sonner';
 export default function SOSButton() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
+  const [countdown, setCountdown] = useState(60);
 
   const handleSOSActivation = () => {
+    if (isActivating) return;
     setIsActivating(true);
 
-    // Simulate SOS activation
     setTimeout(() => {
       toast.error('SOS ACTIVATED - Emergency services notified', {
         duration: 5000,
@@ -28,7 +29,28 @@ export default function SOSButton() {
       });
       setIsActivating(false);
       setShowConfirm(false);
+      setCountdown(60); 
     }, 1500);
+  };
+
+  // The "Dead Man's Switch" Timer Logic
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    if (showConfirm && countdown > 0 && !isActivating) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    } else if (showConfirm && countdown === 0 && !isActivating) {
+      handleSOSActivation();
+    }
+
+    return () => clearInterval(timer);
+  }, [showConfirm, countdown, isActivating]);
+
+  const handleCancel = () => {
+    setShowConfirm(false);
+    setCountdown(60);
   };
 
   return (
@@ -39,37 +61,61 @@ export default function SOSButton() {
         onClick={() => setShowConfirm(true)}
       >
         <div className="flex flex-col items-center">
-          <AlertTriangle className="size-8" />
-          <span className="text-xs mt-1">SOS</span>
+          <AlertTriangle className="size-8 text-white" />
+          <span className="text-xs mt-1 text-white font-bold">SOS</span>
         </div>
       </Button>
 
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-        <AlertDialogContent>
+        <AlertDialogContent className="border-2 border-red-600">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
-              <AlertTriangle className="size-6" />
-              Activate Emergency SOS
+            <AlertDialogTitle className="flex items-center justify-between text-red-600 text-xl font-bold">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="size-6" />
+                Activate Emergency SOS
+              </div>
+              <div className="flex items-center gap-1 text-sm bg-red-50 text-red-600 px-3 py-1 rounded-full border border-red-200">
+                <Timer className="size-4 animate-spin-slow" />
+                <span>{countdown}s</span>
+              </div>
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              This will immediately:
-              <ul className="list-disc list-inside mt-2 space-y-1">
+            
+            <AlertDialogDescription className="text-slate-700">
+              <p className="mb-3">
+                This will immediately:
+              </p>
+              <ul className="list-disc list-inside space-y-2 mb-4 text-sm bg-slate-50 p-3 rounded-lg border border-slate-100">
                 <li>Alert your emergency contacts</li>
                 <li>Send your live location to authorities</li>
                 <li>Activate your Sentinel Ring's emergency mode</li>
                 <li>Start recording biometric and audio evidence</li>
               </ul>
-              <p className="mt-3 font-semibold">Are you in danger?</p>
+              
+              <div className="bg-red-50 p-3 rounded-lg border border-red-100">
+                <p className="text-red-700 font-bold text-center">
+                  AUTO-ACTIVATING IN {countdown} SECONDS
+                </p>
+                <p className="text-xs text-red-600 text-center mt-1">
+                  Are you in danger?
+                </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isActivating}>Cancel</AlertDialogCancel>
+
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogCancel 
+              onClick={handleCancel} 
+              disabled={isActivating}
+              className="border-slate-200"
+            >
+              I am safe (Cancel)
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleSOSActivation}
               disabled={isActivating}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 text-white font-bold"
             >
-              {isActivating ? 'Activating...' : 'Activate SOS'}
+              {isActivating ? 'Activating...' : 'Activate Now'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
