@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/* Ensure these lines have semicolons at the end! */
+@source "../**/*.{js,ts,jsx,tsx}";
+
+@import "tw-animate-css";
+
+@theme {
+  /* This is where your Figma variables go */
+  --color-background: #000000; /* Change this to your actual dark hex code */
+  --color-primary: #3b82f6;
+}

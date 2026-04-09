@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "composite": true,         /* Fixes the 'must have setting composite' error */
+    "noEmit": false,           /* Fixes the 'may not disable emit' error */
+    "emitDeclarationOnly": true, /* Ensures it doesn't actually clutter your folder with JS files */
+    
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "strict": true,
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts"]
+}
